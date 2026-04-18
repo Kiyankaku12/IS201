@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chess Tactics Trainer</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #111;
+      color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      padding: 40px 10px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      background: #1b1b1b;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 1.8rem;
+      text-align: center;
+    }
+
+    .meta {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+
+    .board-frame {
+      padding: 0px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 10% 10%, #5b3a1f, #2b1a0d);
+      box-shadow: inset 0 0 0 2px rgba(0,0,0,0.4);
+      margin: 0 auto 20px;
+      width: fit-content;
+    }
+
+    .board {
+      width: min(360px, 80vw);
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.6);
+    }
+
+    .square {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.15s ease, transform 0.05s ease;
+    }
+
+    /* darker wood squares */
+    .square.light { background: #d7b48a; }
+    .square.dark  { background: #8b5a2b; }
+
+    .square.selected {
+      outline: 3px solid #f6f669;
+      background: #cfd26b;
+    }
+
+    .piece {
+      font-size: clamp(1.8rem, 3vw, 2.4rem);
+    }
+
+    .piece.white {
+      color: #fff;
+      text-shadow: 0 0 3px #000;
+    }
+
+    .piece.black {
+      color: #000;
+      text-shadow: 0 0 3px #fff;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      background: #f0c674;
+      color: #1b1b1b;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    button.secondary {
+      background: #333;
+      color: #eee;
+    }
+
+    button.info {
+      background: #2b6cb0;
+      color: #fff;
+    }
+
+    .status, .answer, .selected-move {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 0.95rem;
+    }
+
+    .status.ok { color: #9ae6b4; }
+    .status.err { color: #feb2b2; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Chess Tactics Trainer</h1>
+
+    <div class="meta">
+      Puzzle <span id="puzzleIndex">1</span> of <span id="puzzleTotal">7</span> —
+      Side to move: <span id="sideToMove">White</span>
+    </div>
+
+    <div class="board-frame">
+      <div id="board" class="board"></div>
+    </div>
+
+    <div class="meta" id="description">Loading puzzle...</div>
+
+    <div class="controls">
+      <button id="checkBtn">Check Move</button>
+      <button id="showBtn" class="info">Show Answer</button>
+      <button id="nextBtn" class="secondary">Next</button>
+      <button id="resetBtn" class="secondary">Reset</button>
+    </div>
+
+    <div class="selected-move">Selected move: <span id="selectedMove">—</span></div>
+    <div class="answer" id="answerText"></div>
+    <div class="status" id="statusText"></div>
+  </div>
+
+  <script>
+    const pieceIcons = {
+      "K": "♔", "Q": "♕", "R": "♖", "B": "♗", "N": "♘", "P": "♙",
+      "k": "♚", "q": "♛", "r": "♜", "b": "♝", "n": "♞", "p": "♟"
+    };
+
+    const puzzles = [
+      {
+        description: "White to move. Mate in one.",
+        sideToMove: "White",
+        correctMove: "b1-a1",
+        pretty: "Rb1–a1# — rook slides to a1 delivering mate.",
+        rows: [
+          "k . . r r . . .",
+          ". p . n . . . .",
+          ". . . . . p . p",
+          ". . p . . . . .",
+          ". . P p . B . .",
+          ". . . . . . . P",
+          ". . . . P P P .",
+          ". R . . R . K ."
+        ]
+      },
+      {
+        description: "White to move. Mate in one.",
+        sideToMove: "White",
+        correctMove: "d3-d8",
+        pretty: "Qd8# — queen jumps to d8 delivering immediate mate.",
+        rows: [
+          ". . k . . . n r",
+          "p p p . . p p .",
+          ". . q . . . . .",
+          ". . . . p . . .",
+          ". p . . . . . p",
+          "P . . Q . . . .",
+          ". . . . P P P P",
+          ". . . R . . K ."
+        ]
+      },
+      {
+        description: "White to move. Mate in one.",
+        sideToMove: "White",
+        correctMove: "d3-h7",
+        pretty: "Bh7# — bishop from d3 lands on h7 delivering mate.",
+        rows: [
+          "r . . q . r k .",
+          ". p . . b p . .",
+          "p p n . . . . .",
+          ". . p P . . . .",
+          ". . P . . . . .",
+          "P . . B . . . .",
+          ". B Q . . P P P",
+          "R . . . . R K ."
+        ]
+      },
+      {
+        description: "White to move. Mate in one.",
+        sideToMove: "White",
+        correctMove: "g5-g6",
+        pretty: "g6# — white pawn advances from g5 to g6 delivering mate.",
+        rows: [
+          ". . . . R . . .",
+          ". q . . . . p k",
+          ". . b . p . . .",
+          "p n . . P . P .",
+          ". . p . . . . .",
+          ". . . . B . . .",
+          "P P P . . . . .",
+          ". . K . . . R ."
+        ]
+      },
+      {
+        description: "White to move. Mate in one.",
+        sideToMove: "White",
+        correctMove: "e4-b7",
+        pretty: "Qb7# — queen jumps to b7 delivering mate.",
+        rows: [
+          ". k r . . . . .",
+          "p p p . . . . .",
+          ". . . . . . . .",
+          ". . . . . . . .",
+          ". . . . Q . . .",
+          ". . . . . . . .",
+          ". . K . . . B .",
+          ". . . . . . . ."
+        ]
+      },
+      {
+        description: "White to move. Mate in one.",
+        sideToMove: "White",
+        correctMove: "d1-h5",
+        pretty: "Qh5# — queen jumps to h5 delivering mate.",
+        rows: [
+          "r n b q k b n r",
+          "p p p p p . . p",
+          ". . . . . p . .",
+          ". . . . . . p .",
+          ". . . p p . . .",
+          ". . . . . . . .",
+          "P P P . . P P P",
+          "R N B Q K B N R"
+        ]
+      },
+      {
+        description: "White to move. Mate in one.",
+        sideToMove: "White",
+        correctMove: "f5-g7",
+        pretty: "Ng7# — knight jumps from f5 to g7 delivering mate.",
+        rows: [
+          ". . . n k r . .",
+          "p . R . . p p .",
+          ". . . . . . . p",
+          ". . . . . N . .",
+          ". b . . . . . .",
+          ". P . . . . . P",
+          "P . . . . P . .",
+          ". . . . . . K ."
+        ]
+      }
+    ];
+    // Store original rows for reset
+puzzles.forEach(p => {
+  p.originalRows = JSON.parse(JSON.stringify(p.rows));
+});
+
+
+    let index = 0;
+    let selected = null;
+    let lastMove = null;
+
+    const boardEl = document.getElementById("board");
+    const puzzleIndexEl = document.getElementById("puzzleIndex");
+    const puzzleTotalEl = document.getElementById("puzzleTotal");
+    const sideToMoveEl = document.getElementById("sideToMove");
+    const descriptionEl = document.getElementById("description");
+    const statusEl = document.getElementById("statusText");
+    const selectedMoveEl = document.getElementById("selectedMove");
+    const answerEl = document.getElementById("answerText");
+
+    puzzleTotalEl.textContent = puzzles.length;
+
+    function coord(r, c) {
+      return String.fromCharCode(97 + c) + (8 - r);
+    }
+
+    function drawBoard() {
+      boardEl.innerHTML = "";
+      const p = puzzles[index];
+      const rows = p.rows;
+
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const sq = document.createElement("div");
+          sq.className = "square " + ((r + c) % 2 === 0 ? "light" : "dark");
+          sq.dataset.r = r;
+          sq.dataset.c = c;
+
+          const symbol = rows[r].split(" ")[c];
+          if (symbol !== ".") {
+            const piece = document.createElement("span");
+            piece.className = "piece " + (symbol === symbol.toUpperCase() ? "white" : "black");
+            piece.textContent = pieceIcons[symbol];
+            sq.appendChild(piece);
+          }
+
+          sq.addEventListener("click", () => handleClick(r, c));
+          boardEl.appendChild(sq);
+        }
+      }
+
+      if (selected) {
+        const idx = selected.r * 8 + selected.c;
+        boardEl.children[idx].classList.add("selected");
+      }
+
+      puzzleIndexEl.textContent = index + 1;
+      sideToMoveEl.textContent = p.sideToMove;
+      descriptionEl.textContent = p.description;
+    }
+
+    function handleClick(r, c) {
+      const p = puzzles[index];
+      const rows = p.rows;
+      const squares = boardEl.children;
+
+      if (!selected) {
+        const symbol = rows[r].split(" ")[c];
+        if (symbol !== ".") {
+          selected = { r, c };
+          const idx = r * 8 + c;
+          squares[idx].classList.add("selected");
+        }
+        return;
+      }
+
+      const from = selected;
+      const piece = rows[from.r].split(" ")[from.c];
+
+      const newRows = rows.map(row => row.split(" "));
+      newRows[from.r][from.c] = ".";
+      newRows[r][c] = piece;
+      p.rows = newRows.map(row => row.join(" "));
+
+      lastMove = coord(from.r, from.c) + "-" + coord(r, c);
+      selectedMoveEl.textContent = lastMove;
+
+      selected = null;
+      drawBoard();
+    }
+
+    function checkMove() {
+      const p = puzzles[index];
+      if (!lastMove) {
+        statusEl.textContent = "Make a move first.";
+        statusEl.className = "status err";
+        return;
+      }
+      if (lastMove === p.correctMove) {
+        statusEl.textContent = "Correct! " + p.pretty;
+        statusEl.className = "status ok";
+      } else {
+        statusEl.textContent = "Incorrect. Try again or show the answer.";
+        statusEl.className = "status err";
+      }
+    }
+
+    function showAnswer() {
+      const p = puzzles[index];
+      answerEl.textContent = "Answer: " + p.pretty + " (" + p.correctMove + ")";
+    }
+
+    function nextPuzzle() {
+      index = (index + 1) % puzzles.length;
+      resetState();
+      drawBoard();
+    }
+
+function resetState() {
+  const p = puzzles[index];
+
+  // Reset puzzle rows to the original starting position
+  p.rows = JSON.parse(JSON.stringify(p.originalRows));
+
+  // Reset UI state
+  selected = null;
+  lastMove = null;
+  selectedMoveEl.textContent = "—";
+  answerEl.textContent = "";
+  statusEl.textContent = "";
+  statusEl.className = "status";
+
+  // Redraw the board
+  drawBoard();
+}
+
+
+    document.getElementById("checkBtn").onclick = checkMove;
+    document.getElementById("showBtn").onclick = showAnswer;
+    document.getElementById("nextBtn").onclick = nextPuzzle;
+    document.getElementById("resetBtn").onclick = resetState;
+
+    drawBoard();
+  </script>
+</body>
+</html>
