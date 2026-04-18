@@ -4,139 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chess</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-
-    /* Navbar */
-    .navbar {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background-color: rgba(0,0,0,0.7);
-      padding: 15px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: white;
-      z-index: 1000;
-    }
-
-    .navbar a {
-      color: white;
-      text-decoration: none;
-      margin-left: 20px;
-      font-weight: bold;
-    }
-
-    .navbar a:hover {
-      text-decoration: underline;
-    }
-
-    /* Hero Section */
-    .hero {
-      height: 100vh;
-      background-image: url('assets/img/chessboard.jpg'); 
-      background-size: cover;
-      background-position: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      text-align: center;
-      position: relative;
-    }
-
-    .hero::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.4);
-    }
-
-    .hero h1 {
-      font-size: 3rem;
-      z-index: 1;
-    }
-
-    .hero h2 {
-      font-size: 2rem;
-      margin-top: 8px;
-      letter-spacing: 2px;
-      z-index: 1;
-    }
-    .hero-text {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;   /* STACKS vertically */
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-    } 
-
-     /* Content Section */
-    .content {
-      padding: 100px 20px;
-      max-width: 900px;
-      margin: auto;
-      font-family: Georgia, 'Times New Roman', serif;
-    }
-    
-    .content h2 {
-      font-size: 2.5rem;
-      margin-bottom: 40px;
-      color: #222;
-      text-align: center;
-    }
-    .content p{
-      font-size: 1.1rem;
-      line-height: 2.5;
-      color: #333;
-      margin-bottom: 20px;
-      max-width: 900px;
-      text-align: justify;
-    }
-    
-    .content ol{
-      font-size: 1.1rem;
-      line-height: 2;
-      color: #333;
-      margin-bottom: 10px;
-      text-align: justify;
-    }
-
-
-  .list-heading {
-      font-weight: bold;
-      font-style: italic;
-    }
-
-    /* Video Section */
-    .video-section {
-      margin-top: 50px;
-      margin-bottom: 100px;
-      display: flex;
-      justify-content: center;
-    }
-
-    iframe {
-      width: 100%;
-      max-width: 700px;
-      height: 400px;
-      border: none;
-    }
-
-    .navbar div:last-child {
-     margin-right: 50px;
-    }
-
-  </style>
+  <link rel="stylesheet" href="css/scratchpagestyles.css">
 </head>
 <body>
 
@@ -145,15 +13,16 @@
     <div>My Blog</div>
     <div>
       <a href="#">Home</a>
-      <a href="index.html">Resume</a>
+      <a href="../index.html">Resume</a>
     </div>
   </div>
 
   <!-- Hero Image Section -->
   <section class="hero">
     <div class="hero-text">
-    <h1>The Game of Chess</h1>
-    <h2>Kiyan Kaku</h2>
+      <h1>The Game of Chess</h1>
+      <h2>Kiyan Kaku</h2>
+    </div>
   </section>
 
   <!-- Main Content -->
@@ -165,7 +34,8 @@
 
     <!-- Video Section -->
     <div class="video-section">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/OCSbzArwB10?si=T48H59ZEViA3Oi3l" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>      </iframe>
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen>
+      </iframe>
     </div>  
 
     <h2 id="the-pieces">The Pieces</h2>
@@ -203,9 +73,60 @@
                 <li>On its first move, it can move forward two squares.</li>           
             </ul>
         </li>
-    </ol>   
+    </ol>
+
+    <h2>The Best in the World</h2>
+  </div>
+  <div class="tableau-container">
+    <div class='tableauPlaceholder' id='viz1776483989127'>
+
+      <noscript>
+        <a href='#'>
+          <img alt='Top Chess Players Around the World'
+          src='https://public.tableau.com/static/images/Wo/WorldsTopChessPlayers/Dashboard1/1_rss.png'
+          style='width:100%; border:none;' />
+        </a>
+      </noscript>
+
+      <object class='tableauViz' style="width:100% !important; height:100% !important;">
+        <param name='host_url' value='https://public.tableau.com/' />
+        <param name='embed_code_version' value='3' />
+        <param name='name' value='WorldsTopChessPlayers/Dashboard1' />
+        <param name='tabs' value='no' />
+        <param name='toolbar' value='yes' />
+
+        <!-- ✅ responsive -->
+        <param name='device' value='desktop' />
+      </object>
+
+    </div>
   </div>
 
+  <script>
+    var divElement = document.getElementById('viz1776483989127');
+    var vizElement = divElement.getElementsByTagName('object')[0];
 
+    function resizeViz() {
+      var width = divElement.offsetWidth;
+
+      vizElement.style.width = '100%';
+
+      if (width > 800) {
+        vizElement.style.height = (width * 0.6) + 'px';  // cleaner ratio
+      } else if (width > 500) {
+        vizElement.style.height = (width * 0.75) + 'px';
+      } else {
+        vizElement.style.height = '600px';
+      }
+    }
+
+    resizeViz();
+    window.addEventListener('resize', resizeViz);
+
+    var scriptElement = document.createElement('script');
+    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
+    vizElement.parentNode.insertBefore(scriptElement, vizElement);
+  </script>    
+</div>
 </body>
 </html>
